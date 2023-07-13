@@ -10,8 +10,12 @@ import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.*;
+import java.util.Comparator;
 import org.apache.solr.common.SolrException;
 
 /*
