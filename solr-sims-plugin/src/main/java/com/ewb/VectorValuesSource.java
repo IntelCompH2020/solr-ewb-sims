@@ -27,17 +27,10 @@ public class VectorValuesSource extends DoubleValuesSource {
     private Terms terms; // Access to the terms in a specific field
     private TermsEnum te; // Iterator to step through terms to obtain frequency information
     private String[] limits;
-    private static final Logger logger = Logger.getLogger(VectorValuesSource.class.getName());
+    //private static final Logger logger = Logger.getLogger(VectorValuesSource.class.getName());
 
     public VectorValuesSource(String field, String strVector) {
         /*
-         * Document queries are assumed to be given as:
-         * http://localhost:8983/solr/{your-corpus-collection-name}/query?fl=name,score,
-         * vector&q={!vp f=doctpc_{your-model-name} vector="t0|43 t4|548 t5|6 t20|403"}
-         * while topic queries as follows:
-         * http://localhost:8983/solr/{your-model-collection-name}/query?fl=name,score,
-         * vector&q={!vp f=betas
-         * vector="high|43 research|548 development|6 neural_networks|403"}
          * Similar pairs of document queries are assumed to be given as:
          * http://localhost:8983/solr/{your-corpus-collection-name}/query?fl=name,score,
          * vector&q={!vs f=sim_{your-model-name} vector="20,50"}
@@ -61,9 +54,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                 List<String> doc_id = new ArrayList<String>();
                 List<Double> doc_sim = new ArrayList<Double>();
                 while ((text = te.next()) != null) {
-                    logger.info("-- INSIDE THE FIRST LOOP");
                     term = text.utf8ToString();
-                    logger.info("-- TERM OF SIM_MALLET-10 IS: " + term);
                     if (term.isEmpty()) {
                         continue;
                     }
@@ -75,7 +66,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                     // iterating all payload components (we will have as many components as topics
                     // the model has)
                     while (postings.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-                        logger.info("-- INSIDE THE SECOND LOOP");
                         int freq = postings.freq();
                         while (freq-- > 0)
                             postings.nextPosition();
@@ -84,15 +74,51 @@ public class VectorValuesSource extends DoubleValuesSource {
                         payloadValue = PayloadHelper.decodeFloat(payload.bytes, payload.offset);
                         doc_id.add(term);
                         doc_sim.add((double) payloadValue);
-                        logger.info("Doc_id: " + doc_id.toString());
-                        logger.info("Doc_sim: " + doc_sim.toString());
                     }
                 }  
-                
+                /* 
                 logger.info("-- OUT OF THE LOOPS");
                 logger.info("Doc_id: " + doc_id.toString());
-                logger.info("Doc_sim: " + doc_sim.toString());
+                logger.info("Doc_sim: " + doc_sim.toString());*/
 
+                double lowerLimit = Double.parseDouble(limits[0])/100;
+                double upperLimit = Double.parseDouble(limits[1])/100;
+
+                int low_index = -1;
+                int up_index = -1;
+
+                // Combine lists into a list of docSimilarity objects
+                List<docSimilarity> docSimilarities = new ArrayList<>();
+                for (int i = 0; i < doc_id.size(); i++) {
+                    docSimilarities.add(new docSimilarity(doc_id.get(i), doc_sim.get(i)));
+                }
+
+                // Sort the docSimilarities list using SimilarityComparator
+                Collections.sort(docSimilarities, Collections.reverseOrder(new SimilarityComparator()));
+
+                // Extract the sorted items in the doc_id and doc_sim lists
+                for (int i = 0; i < docSimilarities.size(); i++) {
+                    docSimilarity ds = docSimilarities.get(i);
+                    if (ds.getSimilarity() <= upperLimit && low_index == -1) {
+                        low_index = i;
+                    }
+
+                    if (ds.getSimilarity() >= lowerLimit) {
+                        up_index = i;
+                    }
+                }
+        
+                // Calculate the final score
+                if(low_index == -1 || up_index == -1) {
+                    score = -1.0;
+                } else{
+                    score = Double.parseDouble(low_index + "." + up_index);
+                }        
+                
+                
+
+
+                /* 
                 double lowerLimit = Double.parseDouble(limits[0])/100;
                 double upperLimit = Double.parseDouble(limits[1])/100;
 
@@ -123,7 +149,6 @@ public class VectorValuesSource extends DoubleValuesSource {
                 score = Double.parseDouble(low_index + "." + up_index);
                 String doc_id_aux = doc_id.toString();
                 String doc_sims_aux = doc_sim.toString(); 
-                System.out.println("uno" + doc_id_aux + "-- dos" + doc_sims_aux + "-- tres" +  score + "-- cuatro" + lowerLimit + "-- cinco" + upperLimit);
                 
                 int aux  = 1;
                 try {
@@ -133,6 +158,7 @@ public class VectorValuesSource extends DoubleValuesSource {
                     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "uno" + doc_id_aux + "-- dos" + doc_sims_aux + "-- tres" +  score + "-- cuatro" + lowerLimit + "-- cinco" + upperLimit);
                 }
                 
+                */
                 
                    
                 
