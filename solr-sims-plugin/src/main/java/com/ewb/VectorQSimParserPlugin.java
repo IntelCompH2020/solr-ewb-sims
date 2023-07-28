@@ -49,7 +49,7 @@ public class VectorQSimParserPlugin extends QParserPlugin {
 
                 FieldType ft = req.getCore().getLatestSchema().getFieldType(field);
                 if (ft != null) {
-                    VectorQuery q = new VectorQuery(subQuery);
+                    VectorSimQuery q = new VectorSimQuery(subQuery);
                     q.setQueryString(localParams.toLocalParamsString());
                     query = q;
                 }
@@ -58,7 +58,7 @@ public class VectorQSimParserPlugin extends QParserPlugin {
                     throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Query is null");
                 }
 
-                return new FunctionScoreQuery(query, new VectorValuesSource(field, vector));
+                return new FunctionScoreQuery(query, new VectorSimValuesSource(field, vector));
             }
         };
     }

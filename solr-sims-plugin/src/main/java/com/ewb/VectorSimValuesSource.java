@@ -21,7 +21,7 @@ import org.apache.solr.common.SolrException;
 /*
  * This class receives the query vector and computes its distance to the document vector by reading the vector values directly from the Lucene index. As distance metric, the Jensen-Shannon divergence is used.
  */
-public class VectorValuesSource extends DoubleValuesSource {
+public class VectorSimValuesSource extends DoubleValuesSource {
     private final String field;
 
     private Terms terms; // Access to the terms in a specific field
@@ -29,7 +29,7 @@ public class VectorValuesSource extends DoubleValuesSource {
     private String[] limits;
     //private static final Logger logger = Logger.getLogger(VectorValuesSource.class.getName());
 
-    public VectorValuesSource(String field, String strVector) {
+    public VectorSimValuesSource(String field, String strVector) {
         /*
          * Similar pairs of document queries are assumed to be given as:
          * http://localhost:8983/solr/{your-corpus-collection-name}/query?fl=name,score,

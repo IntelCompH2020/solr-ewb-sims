@@ -9,11 +9,11 @@ import java.io.IOException;
  * It provides a scorer that will iterate all documents in an index and compute
  * the JS similarity between a document and query document
  */
-public class VectorQuery extends Query {
+public class VectorSimQuery extends Query {
     String queryStr = "";
     Query q;
 
-    public VectorQuery(Query subQuery) {
+    public VectorSimQuery(Query subQuery) {
         this.q = subQuery;
     }
 
